@@ -4,14 +4,22 @@ using UnityEngine;
 
 public class MouvementFusée : MonoBehaviour
 {
-    Rigidbody corps;
     [SerializeField] float puissance = 10f;
     [SerializeField] float rotation = 50f;
+    [SerializeField] AudioClip moteurFusée;
 
+    [SerializeField] ParticleSystem moteurPrincipal;
+    [SerializeField] ParticleSystem moteurGauche;
+    [SerializeField] ParticleSystem moteurDroit;
+
+
+    AudioSource audioSource;
+    Rigidbody corps;  
 
     void Start()
     {
        corps = GetComponent<Rigidbody>();
+       audioSource = GetComponent<AudioSource>();
     }
 
     void Update()
@@ -24,23 +32,70 @@ public class MouvementFusée : MonoBehaviour
     {
         if (Input.GetKey(KeyCode.Space))
         {
-            corps.AddRelativeForce(Vector3.up * puissance * Time.deltaTime);
-        }        
-    }
+            DébutPoussée();
+        }
+        else
+        {
+            StopPoussée();
+        }
 
+    }
     void Rotation()
     {
         if (Input.GetKey(KeyCode.Q))
         {
-            EffectuerRotation(-rotation);
+            RotationGauche();
+        }
+        else if (Input.GetKey(KeyCode.D))
+        {
+            RotationDroite();
+        }
+        else
+        {
+            StopRotation();
         }
 
-        else 
-        
-        if (Input.GetKey(KeyCode.D))
+    }
+
+
+    void DébutPoussée()
+    {
+        corps.AddRelativeForce(Vector3.up * puissance * Time.deltaTime);
+        moteurPrincipal.Play();
+        if (!audioSource.isPlaying)
         {
-            EffectuerRotation(rotation);
+            audioSource.PlayOneShot(moteurFusée);
         }
+    }
+    private void StopPoussée()
+    {
+        audioSource.Stop();
+        moteurPrincipal.Stop();
+    }
+
+
+    private void RotationDroite()
+    {
+        EffectuerRotation(rotation);
+        if (!moteurGauche.isPlaying)
+        {
+            moteurGauche.Play();
+        }
+    }
+
+    private void RotationGauche()
+    {
+        EffectuerRotation(-rotation);
+        if (!moteurDroit.isPlaying)
+        {
+            moteurDroit.Play();
+        }
+    }
+
+    private void StopRotation()
+    {
+        moteurDroit.Stop();
+        moteurGauche.Stop();
     }
 
     void EffectuerRotation(float sensRotation)
@@ -49,6 +104,7 @@ public class MouvementFusée : MonoBehaviour
         transform.Rotate(Vector3.back * sensRotation * Time.deltaTime);
         corps.freezeRotation = false;
     }
-
     
+
+
 }
